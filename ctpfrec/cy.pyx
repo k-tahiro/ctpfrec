@@ -4,6 +4,7 @@ cimport cython
 from cython.parallel cimport prange
 from scipy.linalg.cython_blas cimport sdot
 from scipy.special.cython_special cimport psi, gamma
+from libc.float cimport FLT_MAX
 from libc.math cimport log, exp
 import ctypes
 from hpfrec import cython_loops
@@ -489,7 +490,7 @@ cdef void update_Z(float* Z, float* Theta_shp, float* Theta_rte,
 			st_ix_theta = ix_d[i] * K
 			st_ix_beta = ix_v[i] * K
 			sumrow = 0
-			maxval =  - 10**1
+			maxval =  - FLT_MAX
 			for k in range(K):
 				Z[st_ix_z + k] = psi(Theta_shp[st_ix_theta + k]) - log(Theta_rte[k]) + psi(Beta_shp[st_ix_beta + k]) - log(Beta_rte[k])
 				if Z[st_ix_z + k] > maxval:
@@ -542,7 +543,7 @@ cdef void update_Z_var_pred(float* Z, float* Zconst, float* W, float* Theta_shp,
 		st_ix_z = i * K
 		st_ix_theta = ix_d[i] * K
 		sumrow = 0
-		maxval = - 10**1
+		maxval = - FLT_MAX
 		for k in range(K):
 			Z[st_ix_z + k] = Theta_shp[st_ix_theta + k] + Zconst[st_ix_z + k]
 			if Z[st_ix_z + k] > maxval:
@@ -570,7 +571,7 @@ cdef void update_Y(float* Ya, float* Yb, float* Eta_shp, float* Eta_rte, float* 
 			st_ix_d = ix_d_r[i] * K
 			st_ix_y = i * K
 			sumrow = 0
-			maxval = - 10**11
+			maxval = - FLT_MAX
 			for k in range(K):
 				E_eta = psi(Eta_shp[st_ix_u + k]) - log(Eta_rte[k])
 				ix_2 = st_ix_d + k
@@ -627,7 +628,7 @@ cdef void update_Y_csr(float* Ya, float* Yb, float* Eta_shp, float* Eta_rte,
 			st_ix_u = ix_u_r[i + st_ix_doc[did]] * K
 			st_ix_y = i * K
 			sumrow = 0
-			maxval = - 10**11
+			maxval = - FLT_MAX
 			for k in range(K):
 				E_eta = psi(Eta_shp[st_ix_u + k]) - log(Eta_rte[k])
 				ix_2 = st_ix_d + k
@@ -809,4 +810,3 @@ cdef void llk_plus_rmse(float* T, float* B, float* Y,
 			out[0] = out1
 	### Comment: adding += directly to *out triggers compiler optimizations that produce
 	### different (and wrong) results across different runs.
-
